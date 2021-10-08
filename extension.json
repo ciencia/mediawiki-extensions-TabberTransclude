@@ -1,10 +1,11 @@
 {
-	"name": "TabberNeue",
-	"version": "1.0.2",
+	"name": "TabberTransclude",
+	"version": "1.0.0",
 	"author": [
 		"alistair3149",
 		"Eric Fortin",
-		"Alexia E. Smith"
+		"Alexia E. Smith",
+		"Ciencia Al Poder"
 	],
 	"url": "https://www.mediawiki.org/wiki/Extension:TabberNeue",
 	"descriptionmsg": "tabberneue-desc",
@@ -14,7 +15,7 @@
 		"MediaWiki": ">= 1.35.0"
 	},
 	"MessagesDirs": {
-		"TabberNeue": [
+		"TabberTransclude": [
 			"/i18n"
 		]
 	},
@@ -22,7 +23,7 @@
 		"TabberNeue\\TabberNeueHooks": "includes/TabberNeueHooks.php"
 	},
 	"ConfigRegistry": {
-		"TabberNeue": "GlobalVarConfig::newInstance"
+		"TabberTransclude": "GlobalVarConfig::newInstance"
 	},
 	"ResourceModules": {
 		"ext.tabberNeue": {
@@ -32,6 +33,10 @@
 					"name": "config.json",
 					"callback": "TabberNeue\\TabberNeueHooks::getTabberNeueResourceLoaderConfig"
 				}
+			],
+			"messages": [
+				"tabberneue-loading",
+				"tabberneue-error"
 			],
 			"styles": [
 				"ext.tabberNeue.less"
@@ -66,7 +71,7 @@
 	},
 	"ResourceFileModulePaths": {
 		"localBasePath": "modules",
-		"remoteExtPath": "TabberNeue/modules"
+		"remoteExtPath": "TabberTransclude/modules"
 	},
 	"config_prefix": "wgTabberNeue",
 	"config": {

@@ -115,6 +115,32 @@ function initTabber( tabber ) {
 		} );
 	};
 
+	const xhr = new XMLHttpRequest();
+	var currentRequest = null, nextRequest = null;
+
+	/**
+	 * Loads page contents into tab
+	 *
+	 * @param {HTMLElement} tab panel
+	 * @param {string} api URL
+	 */
+	function loadPage( targetPanel, url ) {
+		const requestData = {
+			url: url,
+			targetPanel: targetPanel
+		};
+		if ( currentRequest ) {
+			if ( currentRequest.url != requestData.url ) {
+				nextRequest = requestData;
+			}
+			// busy
+			return;
+		}
+		xhr.open( 'GET', url );
+		currentRequest = requestData;
+		xhr.send( null );
+	}
+
 	/**
 	 * Show panel based on target hash
 	 *
@@ -147,6 +173,15 @@ function initTabber( tabber ) {
 			return height;
 		};
 
+		if ( targetPanel.dataset.tabberPendingLoad && targetPanel.dataset.tabberLoadUrl ) {
+			const loading = document.createElement( 'div' );
+			loading.setAttribute( 'class', 'tabber__loading' );
+			loading.appendChild( document.createTextNode( mw.message( 'tabberneue-loading' ).text() ) );
+			targetPanel.textContent = '';
+			targetPanel.appendChild( loading );
+			loadPage( targetPanel, targetPanel.dataset.tabberLoadUrl );
+		}
+
 		/* eslint-disable mediawiki/class-doc */
 		if ( activePanel ) {
 			// Just to be safe since there can be multiple active classes
@@ -178,6 +213,47 @@ function initTabber( tabber ) {
 		section.scrollLeft = targetPanel.offsetLeft;
 		/* eslint-enable mediawiki/class-doc */
 	}
+
+	/**
+	 * Event handler for XMLHttpRequest where ends loading
+	 */
+	function onLoadEndPage() {
+		const targetPanel = currentRequest.targetPanel;
+		if (xhr.status != 200) {
+			const err = document.createElement( 'div' );
+			err.setAttribute( 'class', 'tabber__error' );
+			err.appendChild( document.createTextNode( mw.message( 'tabberneue-error' ).text() ) );
+			targetPanel.textContent = '';
+			targetPanel.appendChild( err );
+		} else {
+			const result = JSON.parse( xhr.responseText );
+			targetPanel.innerHTML = result.parse.text;
+			delete targetPanel.dataset.tabberPendingLoad;
+			delete targetPanel.dataset.tabberLoadUrl;
+		}
+
+		const ACTIVEPANELCLASS = 'tabber__panel--active',
+			targetHash = targetPanel.getAttribute( 'id' ),
+			targetTab = document.getElementById( 'tab-' + targetHash ),
+			section = targetPanel.parentElement,
+			activePanel = section.querySelector( ':scope > .' + ACTIVEPANELCLASS );
+
+		if ( nextRequest ) {
+			currentRequest = nextRequest;
+			nextRequest = null;
+			xhr.open( 'GET', currentRequest.url );
+			xhr.send( null );
+		} else {
+			currentRequest = null;
+		}
+		if ( activePanel ) {
+			// Refresh height
+			showPanel( targetHash );
+		}
+	}
+
+	xhr.timeout = 20000;
+	xhr.addEventListener('loadend', onLoadEndPage);
 
 	/**
 	 * Retrieve target hash and trigger show panel

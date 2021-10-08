@@ -4,7 +4,7 @@
  * TabberNeue Hooks Class
  *
  * @package TabberNeue
- * @author  alistair3149, Eric Fortin, Alexia E. Smith
+ * @author  alistair3149, Eric Fortin, Alexia E. Smith, Ciencia Al Poder
  * @license GPL-3.0-or-later
  * @link    https://www.mediawiki.org/wiki/Extension:TabberNeue
  */
@@ -17,6 +17,7 @@ use Config;
 use Parser;
 use PPFrame;
 use ResourceLoaderContext;
+use Title;
 
 class TabberNeueHooks {
 	/**
@@ -25,11 +26,11 @@ class TabberNeueHooks {
 	 * @param Parser $parser Parser object passed as a reference.
 	 */
 	public static function onParserFirstCallInit( Parser $parser ) {
-		$parser->setHook( 'tabber', [ __CLASS__, 'renderTabber' ] );
+		$parser->setHook( 'tabbertransclude', [ __CLASS__, 'renderTabber' ] );
 	}
 
 	/**
-	 * Renders the necessary HTML for a <tabber> tag.
+	 * Renders the necessary HTML for a <tabbertransclude> tag.
 	 *
 	 * @param string $input The input URL between the beginning and ending tags.
 	 * @param array $args Array of attribute arguments on that beginning tag.
@@ -40,12 +41,13 @@ class TabberNeueHooks {
 	 */
 	public static function renderTabber( $input, array $args, Parser $parser, PPFrame $frame ) {
 		$parser->getOutput()->addModules( 'ext.tabberNeue' );
+		$selected = true;
 
 		$key = substr( md5( $input ), 0, 6 );
-		$arr = explode( "|-|", $input );
+		$arr = explode( "\n", $input );
 		$htmlTabs = '';
 		foreach ( $arr as $tab ) {
-			$htmlTabs .= self::buildTab( $tab, $parser, $frame );
+			$htmlTabs .= self::buildTab( $tab, $parser, $frame, $selected );
 		}
 
 		$html = '<div id="tabber-' . $key . '" class="tabber">' .
@@ -60,22 +62,59 @@ class TabberNeueHooks {
 	 * @param string $tab Tab information
 	 * @param Parser $parser Mediawiki Parser Object
 	 * @param PPFrame $frame Mediawiki PPFrame Object
+	 * @param bool $selected The tab is the selected one
 	 *
 	 * @return string HTML
 	 */
-	private static function buildTab( $tab, Parser $parser, PPFrame $frame ) {
+	private static function buildTab( $tab, Parser $parser, PPFrame $frame, &$selected ) {
 		$tab = trim( $tab );
 		if ( empty( $tab ) ) {
 			return $tab;
 		}
 
+		$tabBody = '';
 		// Use array_pad to make sure at least 2 array values are always returned
-		list( $tabName, $tabBody ) = array_pad( explode( '=', $tab, 2 ), 2, '' );
+		list( $pageName, $tabName ) = array_pad( explode( '|', $tab, 2 ), 2, '' );
+		$title = Title::newFromText( trim( $pageName ) );
+		if ( !$title ) {
+			if ( empty( $tabName ) ) {
+				$tabName = $pageName;
+			}
+			$tabBody = sprintf( '<div class="error">Invalid title: %s</div>', $pageName );
+			$pageName = '';
+		} else {
+			$pageName = $title->getPrefixedText();
+			if ( empty( $tabName ) ) {
+				$tabName = $pageName;
+			}
+			if ( $selected ) {
+				$tabBody = $parser->recursiveTagParseFully(
+					sprintf( '{{:%s}}', $pageName ),
+					$frame
+				);
+			}
+			// Register as a template
+			$revRecord = $parser->fetchCurrentRevisionRecordOfTitle( $title );
+			$parser->getOutput()->addTemplate(
+				$title,
+				$title->getArticleId(),
+				$revRecord ? $revRecord->getId() : null
+			);
+		}
 
-		$tabBody = $parser->recursiveTagParseFully( $tabBody, $frame );
-
-		$tab = '<article class="tabber__panel" title="' . htmlspecialchars( $tabName ) .
-			'">' . $tabBody . '</article>';
+		$tab = '<article class="tabber__panel" title="' . htmlspecialchars( $tabName ) . '"';
+		if ( $title ) {
+			$tab .= ' data-tabber-page-title="' . htmlspecialchars( $pageName ) . '"';
+			// 1.37: $currentTitle = $parser->getPage();
+			$currentTitle = $parser->getTitle();
+			$query = sprintf( '?action=parse&format=json&formatversion=2&title=%s&text={{:%s}}&redirects=1&prop=text&disablelimitreport=1&disabletoc=1&wrapoutputclass=', $currentTitle->getPrefixedText(), $pageName );
+			$tab .= ' data-tabber-load-url="' . htmlspecialchars( wfExpandUrl( wfScript( 'api' ) . $query,  PROTO_CANONICAL ) ) . '"';
+		}
+		if ( !$selected ) {
+			$tab .= ' data-tabber-pending-load="1"';
+		}
+		$tab .= '>' . $tabBody . '</article>';
+		$selected = false;
 
 		return $tab;
 	}
@@ -92,6 +131,8 @@ class TabberNeueHooks {
 	) {
 		return [
 			'wgTabberNeueEnableMD5Hash' => $config->get( 'EnableMD5Hash' ),
+			//'wgTabberNeueLoadingText' => $context->msg( 'tabberneue-loading' ),
+			//'wgTabberNeueErrorText' => $context->msg( 'tabberneue-error' ),
 		];
 	}
 }
