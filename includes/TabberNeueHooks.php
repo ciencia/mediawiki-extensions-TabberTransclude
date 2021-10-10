@@ -26,7 +26,34 @@ class TabberNeueHooks {
 	 * @param Parser $parser Parser object passed as a reference.
 	 */
 	public static function onParserFirstCallInit( Parser $parser ) {
-		$parser->setHook( 'tabbertransclude', [ __CLASS__, 'renderTabber' ] );
+		$parser->setHook( 'tabber', [ __CLASS__, 'renderTabber' ] );
+		$parser->setHook( 'tabbertransclude', [ __CLASS__, 'renderTabberTransclude' ] );
+	}
+
+	/**
+	 * Renders the necessary HTML for a <tabber> tag.
+	 *
+	 * @param string $input The input URL between the beginning and ending tags.
+	 * @param array $args Array of attribute arguments on that beginning tag.
+	 * @param Parser $parser Mediawiki Parser Object
+	 * @param PPFrame $frame Mediawiki PPFrame Object
+	 *
+	 * @return string HTML
+	 */
+	public static function renderTabber( $input, array $args, Parser $parser, PPFrame $frame ) {
+		$parser->getOutput()->addModules( 'ext.tabberNeue' );
+
+		$key = substr( md5( $input ), 0, 6 );
+		$arr = explode( "|-|", $input );
+		$htmlTabs = '';
+		foreach ( $arr as $tab ) {
+			$htmlTabs .= self::buildTab( $tab, $parser, $frame );
+		}
+
+		$html = '<div id="tabber-' . $key . '" class="tabber">' .
+			'<section class="tabber__section">' . $htmlTabs . "</section></div>";
+
+		return $html;
 	}
 
 	/**
@@ -39,7 +66,7 @@ class TabberNeueHooks {
 	 *
 	 * @return string HTML
 	 */
-	public static function renderTabber( $input, array $args, Parser $parser, PPFrame $frame ) {
+	public static function renderTabberTransclude( $input, array $args, Parser $parser, PPFrame $frame ) {
 		$parser->getOutput()->addModules( 'ext.tabberNeue' );
 		$selected = true;
 
@@ -47,7 +74,7 @@ class TabberNeueHooks {
 		$arr = explode( "\n", $input );
 		$htmlTabs = '';
 		foreach ( $arr as $tab ) {
-			$htmlTabs .= self::buildTab( $tab, $parser, $frame, $selected );
+			$htmlTabs .= self::buildTabTransclude( $tab, $parser, $frame, $selected );
 		}
 
 		$html = '<div id="tabber-' . $key . '" class="tabber">' .
@@ -62,11 +89,37 @@ class TabberNeueHooks {
 	 * @param string $tab Tab information
 	 * @param Parser $parser Mediawiki Parser Object
 	 * @param PPFrame $frame Mediawiki PPFrame Object
+	 *
+	 * @return string HTML
+	 */
+	private static function buildTab( $tab, Parser $parser, PPFrame $frame ) {
+		$tab = trim( $tab );
+		if ( empty( $tab ) ) {
+			return $tab;
+		}
+
+		// Use array_pad to make sure at least 2 array values are always returned
+		list( $tabName, $tabBody ) = array_pad( explode( '=', $tab, 2 ), 2, '' );
+
+		$tabBody = $parser->recursiveTagParseFully( $tabBody, $frame );
+
+		$tab = '<article class="tabber__panel" title="' . htmlspecialchars( $tabName ) .
+			'">' . $tabBody . '</article>';
+
+		return $tab;
+	}
+
+	/**
+	 * Build individual tab.
+	 *
+	 * @param string $tab Tab information
+	 * @param Parser $parser Mediawiki Parser Object
+	 * @param PPFrame $frame Mediawiki PPFrame Object
 	 * @param bool $selected The tab is the selected one
 	 *
 	 * @return string HTML
 	 */
-	private static function buildTab( $tab, Parser $parser, PPFrame $frame, &$selected ) {
+	private static function buildTabTransclude( $tab, Parser $parser, PPFrame $frame, &$selected ) {
 		$tab = trim( $tab );
 		if ( empty( $tab ) ) {
 			return $tab;
@@ -131,8 +184,6 @@ class TabberNeueHooks {
 	) {
 		return [
 			'wgTabberNeueEnableMD5Hash' => $config->get( 'EnableMD5Hash' ),
-			//'wgTabberNeueLoadingText' => $context->msg( 'tabberneue-loading' ),
-			//'wgTabberNeueErrorText' => $context->msg( 'tabberneue-error' ),
 		];
 	}
 }
