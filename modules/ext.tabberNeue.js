@@ -219,7 +219,7 @@ function initTabber( tabber ) {
 	 */
 	function onLoadEndPage() {
 		const targetPanel = currentRequest.targetPanel;
-		if (xhr.status != 200) {
+		if ( xhr.status != 200 ) {
 			const err = document.createElement( 'div' );
 			err.setAttribute( 'class', 'tabber__error' );
 			err.appendChild( document.createTextNode( mw.message( 'tabberneue-error' ).text() ) );
@@ -228,6 +228,8 @@ function initTabber( tabber ) {
 		} else {
 			const result = JSON.parse( xhr.responseText );
 			targetPanel.innerHTML = result.parse.text;
+			// wikipage.content hook requires a jQuery object
+			mw.hook( 'wikipage.content' ).fire( $( targetPanel ) );
 			delete targetPanel.dataset.tabberPendingLoad;
 			delete targetPanel.dataset.tabberLoadUrl;
 		}
@@ -253,7 +255,7 @@ function initTabber( tabber ) {
 	}
 
 	xhr.timeout = 20000;
-	xhr.addEventListener('loadend', onLoadEndPage);
+	xhr.addEventListener( 'loadend', onLoadEndPage );
 
 	/**
 	 * Retrieve target hash and trigger show panel
