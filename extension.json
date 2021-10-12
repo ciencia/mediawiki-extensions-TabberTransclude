@@ -7,7 +7,7 @@
 		"Alexia E. Smith",
 		"Ciencia Al Poder"
 	],
-	"url": "https://www.mediawiki.org/wiki/Extension:TabberNeue",
+	"url": "https://github.com/ciencia/mediawiki-extensions-TabberTransclude",
 	"descriptionmsg": "tabberneue-desc",
 	"type": "parserhook",
 	"license-name": "GPL-3.0-or-later",

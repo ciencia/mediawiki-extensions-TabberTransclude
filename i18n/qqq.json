@@ -4,5 +4,7 @@
 			"Shirayuki"
 		]
 	},
-	"tabberneue-desc": "{{desc|name=TabberNeue|url=http://www.mediawiki.org/wiki/Extension:TabberNeue}}"
+	"tabberneue-desc": "{{desc|name=TabberNeue|url=https://github.com/ciencia/mediawiki-extensions-TabberTransclude}}",
+	"tabberneue-loading": "Loading...",
+	"tabberneue-error": "Error."
 }
