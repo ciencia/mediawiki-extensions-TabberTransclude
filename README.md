@@ -61,11 +61,11 @@ The contents of the page of the first tab will be transcluded. Other tabs will b
 
 Tabs are created with `pageName|tabName`, and separated by a new line.
 ```html
-<tabber>
+<tabbertransclude>
 My page 1|First tab
 A second page|Second tab
 Another tab
-</tabber>
+</tabbertransclude>
 ```
 
 ## Configurations
