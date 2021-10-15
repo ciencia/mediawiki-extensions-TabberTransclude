@@ -236,7 +236,6 @@ function initTabber( tabber ) {
 
 		const ACTIVEPANELCLASS = 'tabber__panel--active',
 			targetHash = targetPanel.getAttribute( 'id' ),
-			targetTab = document.getElementById( 'tab-' + targetHash ),
 			section = targetPanel.parentElement,
 			activePanel = section.querySelector( ':scope > .' + ACTIVEPANELCLASS );
 
