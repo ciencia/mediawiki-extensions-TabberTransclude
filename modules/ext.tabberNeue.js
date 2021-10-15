@@ -4,26 +4,26 @@
  * @param {HTMLElement} tabber
  */
 function initTabber( tabber ) {
-	const tabPanels = tabber.querySelectorAll( ':scope > .tabber__section > .tabber__panel' );
+	var tabPanels = tabber.querySelectorAll( ':scope > .tabber__section > .tabber__panel' );
 
-	const container = document.createElement( 'header' ),
+	var container = document.createElement( 'header' ),
 		tabList = document.createElement( 'nav' ),
 		prevButton = document.createElement( 'div' ),
 		nextButton = document.createElement( 'div' );
 
-	const buildTabs = () => {
-		const fragment = new DocumentFragment();
+	var buildTabs = function() {
+		var fragment = new DocumentFragment();
 
-		[ ...tabPanels ].forEach( ( tabPanel ) => {
-			const isMD5 = require( './config.json' ).wgTabberNeueEnableMD5Hash.value,
+		tabPanels.forEach( function( tabPanel ) {
+			var isMD5 = require( './config.json' ).wgTabberNeueEnableMD5Hash.value,
 				tab = document.createElement( 'a' );
 
 			// Prepend with tab so that it does not collide with article heading
-			let hash = 'tab-' + mw.util.escapeIdForAttribute( tabPanel.title ).slice( 0, -1 );
+			var hash = 'tab-' + mw.util.escapeIdForAttribute( tabPanel.title ).slice( 0, -1 );
 
 			// If MD5 Hash is enabled
 			if ( isMD5 ) {
-				const key = tabber.getAttribute( 'id' ).substring( 7 );
+				var key = tabber.getAttribute( 'id' ).substring( 7 );
 				hash += '-' + key;
 			}
 
@@ -59,13 +59,13 @@ function initTabber( tabber ) {
 	tabber.prepend( container );
 
 	// Initalize previous and next buttons
-	const initButtons = () => {
-		const PREVCLASS = 'tabber__header--prev-visible',
+	var initButtons = function() {
+		var PREVCLASS = 'tabber__header--prev-visible',
 			NEXTCLASS = 'tabber__header--next-visible';
 
 		/* eslint-disable mediawiki/class-doc */
-		const scrollTabs = ( offset ) => {
-			const scrollLeft = tabList.scrollLeft + offset;
+		var scrollTabs = function( offset ) {
+			var scrollLeft = tabList.scrollLeft + offset;
 
 			// Scroll to the start
 			if ( scrollLeft <= 0 ) {
@@ -85,19 +85,19 @@ function initTabber( tabber ) {
 			}
 		};
 
-		const setupButtons = () => {
-			const isScrollable = ( tabList.scrollWidth > container.offsetWidth );
+		var setupButtons = function() {
+			var isScrollable = ( tabList.scrollWidth > container.offsetWidth );
 
 			if ( isScrollable ) {
-				const scrollOffset = container.offsetWidth / 2;
+				var scrollOffset = container.offsetWidth / 2;
 
 				// Just to add the right classes
 				scrollTabs( 0 );
-				prevButton.addEventListener( 'click', () => {
+				prevButton.addEventListener( 'click', function() {
 					scrollTabs( -scrollOffset );
 				}, false );
 
-				nextButton.addEventListener( 'click', () => {
+				nextButton.addEventListener( 'click', function() {
 					scrollTabs( scrollOffset );
 				}, false );
 			} else {
@@ -110,12 +110,12 @@ function initTabber( tabber ) {
 		setupButtons();
 
 		// Listen for window resize
-		window.addEventListener( 'resize', () => {
+		window.addEventListener( 'resize', function() {
 			mw.util.debounce( 250, setupButtons() );
 		} );
 	};
 
-	const xhr = new XMLHttpRequest();
+	var xhr = new XMLHttpRequest();
 	var currentRequest = null, nextRequest = null;
 
 	/**
@@ -125,7 +125,7 @@ function initTabber( tabber ) {
 	 * @param {string} api URL
 	 */
 	function loadPage( targetPanel, url ) {
-		const requestData = {
+		var requestData = {
 			url: url,
 			targetPanel: targetPanel
 		};
@@ -147,34 +147,34 @@ function initTabber( tabber ) {
 	 * @param {string} targetHash
 	 */
 	function showPanel( targetHash ) {
-		const ACTIVETABCLASS = 'tabber__tab--active',
+		var ACTIVETABCLASS = 'tabber__tab--active',
 			ACTIVEPANELCLASS = 'tabber__panel--active',
 			targetPanel = document.getElementById( targetHash ),
 			targetTab = document.getElementById( 'tab-' + targetHash ),
 			section = targetPanel.parentElement,
 			activePanel = section.querySelector( ':scope > .' + ACTIVEPANELCLASS );
 
-		const getHeight = ( el ) => {
+		var getHeight = function( el ) {
 			if ( el.offsetHeight !== 0 ) {
 				return el.offsetHeight;
 			}
 
 			// Sometimes the tab is hidden by one of its parent elements
 			// and you can only get the actual height by cloning the element
-			const clone = el.cloneNode( true );
+			var clone = el.cloneNode( true );
 			// Hide the cloned element
 			clone.style.cssText = 'position:absolute;visibility:hidden;';
 			// Add cloned element to body
 			document.body.appendChild( clone );
 			// Measure the height of the clone
-			const height = clone.clientHeight;
+			var height = clone.clientHeight;
 			// Remove the cloned element
 			clone.parentNode.removeChild( clone );
 			return height;
 		};
 
 		if ( targetPanel.dataset.tabberPendingLoad && targetPanel.dataset.tabberLoadUrl ) {
-			const loading = document.createElement( 'div' );
+			var loading = document.createElement( 'div' );
 			loading.setAttribute( 'class', 'tabber__loading' );
 			loading.appendChild( document.createTextNode( mw.message( 'tabberneue-loading' ).text() ) );
 			targetPanel.textContent = '';
@@ -186,10 +186,10 @@ function initTabber( tabber ) {
 		if ( activePanel ) {
 			// Just to be safe since there can be multiple active classes
 			// even if there shouldn't be
-			const activeTabs = tabList.querySelectorAll( '.' + ACTIVETABCLASS );
+			var activeTabs = tabList.querySelectorAll( '.' + ACTIVETABCLASS );
 
 			if ( activeTabs.length > 0 ) {
-				activeTabs.forEach( ( activeTab ) => {
+				activeTabs.forEach( function( activeTab ) {
 					activeTab.classList.remove( ACTIVETABCLASS );
 					activeTab.setAttribute( 'aria-selected', false );
 				} );
@@ -218,15 +218,15 @@ function initTabber( tabber ) {
 	 * Event handler for XMLHttpRequest where ends loading
 	 */
 	function onLoadEndPage() {
-		const targetPanel = currentRequest.targetPanel;
+		var targetPanel = currentRequest.targetPanel;
 		if ( xhr.status != 200 ) {
-			const err = document.createElement( 'div' );
+			var err = document.createElement( 'div' );
 			err.setAttribute( 'class', 'tabber__error' );
 			err.appendChild( document.createTextNode( mw.message( 'tabberneue-error' ).text() ) );
 			targetPanel.textContent = '';
 			targetPanel.appendChild( err );
 		} else {
-			const result = JSON.parse( xhr.responseText );
+			var result = JSON.parse( xhr.responseText );
 			targetPanel.innerHTML = result.parse.text;
 			// wikipage.content hook requires a jQuery object
 			mw.hook( 'wikipage.content' ).fire( $( targetPanel ) );
@@ -234,7 +234,7 @@ function initTabber( tabber ) {
 			delete targetPanel.dataset.tabberLoadUrl;
 		}
 
-		const ACTIVEPANELCLASS = 'tabber__panel--active',
+		var ACTIVEPANELCLASS = 'tabber__panel--active',
 			targetHash = targetPanel.getAttribute( 'id' ),
 			section = targetPanel.parentElement,
 			activePanel = section.querySelector( ':scope > .' + ACTIVEPANELCLASS );
@@ -263,7 +263,7 @@ function initTabber( tabber ) {
 	 * @param {HTMLElement} tabber
 	 */
 	function switchTab() {
-		let targetHash = new mw.Uri( location.href ).fragment;
+		var targetHash = new mw.Uri( location.href ).fragment;
 
 		// Switch to the first tab if no targetHash or no tab is detected
 		if ( !targetHash || !tabList.querySelector( '#tab-' + targetHash ) ) {
@@ -283,9 +283,9 @@ function initTabber( tabber ) {
 	// window.addEventListener( 'hashchange', switchTab, false );
 
 	// Respond to clicks on the nav tabs
-	[ ...tabList.children ].forEach( ( tab ) => {
-		tab.addEventListener( 'click', ( event ) => {
-			const targetHash = tab.getAttribute( 'href' ).substring( 1 );
+	Array.prototype.forEach.call( tabList.children, function( tab ) {
+		tab.addEventListener( 'click', function( event ) {
+			var targetHash = tab.getAttribute( 'href' ).substring( 1 );
 			event.preventDefault();
 			// Add hash to the end of the URL
 			history.pushState( null, null, '#' + targetHash );
@@ -297,11 +297,11 @@ function initTabber( tabber ) {
 }
 
 function main() {
-	const tabbers = document.querySelectorAll( '.tabber' );
+	var tabbers = document.querySelectorAll( '.tabber' );
 
 	if ( tabbers ) {
 		mw.loader.load( 'ext.tabberNeue.icons' );
-		tabbers.forEach( ( tabber ) => {
+		tabbers.forEach( function( tabber ) {
 			initTabber( tabber );
 		} );
 	}
