@@ -14,6 +14,7 @@ declare( strict_types=1 );
 namespace TabberNeue;
 
 use Config;
+use Hooks;
 use Parser;
 use PPFrame;
 use ResourceLoaderContext;
@@ -122,10 +123,11 @@ class TabberNeueHooks {
 	private static function buildTabTransclude( $tab, Parser $parser, PPFrame $frame, &$selected ) {
 		$tab = trim( $tab );
 		if ( empty( $tab ) ) {
-			return $tab;
+			return '';
 		}
 
 		$tabBody = '';
+		$dataProps = [];
 		// Use array_pad to make sure at least 2 array values are always returned
 		list( $pageName, $tabName ) = array_pad( explode( '|', $tab, 2 ), 2, '' );
 		$title = Title::newFromText( trim( $pageName ) );
@@ -140,11 +142,28 @@ class TabberNeueHooks {
 			if ( empty( $tabName ) ) {
 				$tabName = $pageName;
 			}
+			$dataProps['page-title'] = $pageName;
 			if ( $selected ) {
 				$tabBody = $parser->recursiveTagParseFully(
 					sprintf( '{{:%s}}', $pageName ),
 					$frame
 				);
+			} else {
+				$dataProps['pending-load'] = '1';
+				// 1.37: $currentTitle = $parser->getPage();
+				$currentTitle = $parser->getTitle();
+				$query = sprintf(
+					'?action=parse&format=json&formatversion=2&title=%s&text={{:%s}}&redirects=1&prop=text&disablelimitreport=1&disabletoc=1&wrapoutputclass=',
+					urlencode( $currentTitle->getPrefixedText() ),
+					urlencode( $pageName )
+				);
+				$dataProps['load-url'] = wfExpandUrl( wfScript( 'api' ) . $query,  PROTO_CANONICAL );
+				$oldTabBody = $tabBody;
+				// Allow extensions to update the lazy loaded tab
+				Hooks::run( 'TabberTranscludeRenderLazyLoadedTab', [ &$tabBody, &$dataProps, $parser, $frame ] );
+				if ( $oldTabBody != $tabBody ) {
+					$parser->getOutput()->recordOption( 'tabbertranscludelazyupdated' );
+				}
 			}
 			// Register as a template
 			$revRecord = $parser->fetchCurrentRevisionRecordOfTitle( $title );
@@ -156,16 +175,9 @@ class TabberNeueHooks {
 		}
 
 		$tab = '<article class="tabber__panel" title="' . htmlspecialchars( $tabName ) . '"';
-		if ( $title ) {
-			$tab .= ' data-tabber-page-title="' . htmlspecialchars( $pageName ) . '"';
-			// 1.37: $currentTitle = $parser->getPage();
-			$currentTitle = $parser->getTitle();
-			$query = sprintf( '?action=parse&format=json&formatversion=2&title=%s&text={{:%s}}&redirects=1&prop=text&disablelimitreport=1&disabletoc=1&wrapoutputclass=', $currentTitle->getPrefixedText(), $pageName );
-			$tab .= ' data-tabber-load-url="' . htmlspecialchars( wfExpandUrl( wfScript( 'api' ) . $query,  PROTO_CANONICAL ) ) . '"';
-		}
-		if ( !$selected ) {
-			$tab .= ' data-tabber-pending-load="1"';
-		}
+		$tab .= implode( array_map( function( $prop, $value ) {
+			return sprintf( ' data-tabber-%s="%s"', $prop , htmlspecialchars( $value ) );
+		}, array_keys( $dataProps ), $dataProps ) );
 		$tab .= '>' . $tabBody . '</article>';
 		$selected = false;
 
