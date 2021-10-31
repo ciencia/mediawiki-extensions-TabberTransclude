@@ -175,8 +175,8 @@ class TabberNeueHooks {
 		}
 
 		$tab = '<article class="tabber__panel" title="' . htmlspecialchars( $tabName ) . '"';
-		$tab .= implode( array_map( function( $prop, $value ) {
-			return sprintf( ' data-tabber-%s="%s"', $prop , htmlspecialchars( $value ) );
+		$tab .= implode( array_map( static function ( $prop, $value ) {
+			return sprintf( ' data-tabber-%s="%s"', $prop, htmlspecialchars( $value ) );
 		}, array_keys( $dataProps ), $dataProps ) );
 		$tab .= '>' . $tabBody . '</article>';
 		$selected = false;
