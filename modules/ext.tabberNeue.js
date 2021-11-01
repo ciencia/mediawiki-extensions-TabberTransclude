@@ -277,7 +277,7 @@ function initTabber( tabber ) {
 		var targetHash = new mw.Uri( location.href ).fragment;
 
 		// Switch to the first tab if no targetHash or no tab is detected
-		if ( !targetHash || !tabList.querySelector( '#tab-' + targetHash ) ) {
+		if ( !targetHash || !tabList.querySelector( '#tab-' + targetHash.replace( /[^a-zA-Z0-9-_]/g, '\\$&' ) ) ) {
 			targetHash = tabList.firstElementChild.getAttribute( 'id' ).substring( 4 );
 		}
 
