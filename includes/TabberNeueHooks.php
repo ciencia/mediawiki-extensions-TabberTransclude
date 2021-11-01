@@ -100,7 +100,7 @@ class TabberNeueHooks {
 		}
 
 		// Use array_pad to make sure at least 2 array values are always returned
-		list( $tabName, $tabBody ) = array_pad( explode( '=', $tab, 2 ), 2, '' );
+		list( $tabName, $tabBody ) = array_pad( array_map( 'trim', explode( '=', $tab, 2 ) ), 2, '' );
 
 		$tabBody = $parser->recursiveTagParseFully( $tabBody, $frame );
 
