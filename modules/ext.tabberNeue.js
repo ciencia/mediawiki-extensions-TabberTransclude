@@ -152,7 +152,8 @@ function initTabber( tabber ) {
 			targetPanel = document.getElementById( targetHash ),
 			targetTab = document.getElementById( 'tab-' + targetHash ),
 			section = targetPanel.parentElement,
-			activePanel = section.querySelector( ':scope > .' + ACTIVEPANELCLASS );
+			activePanel = section.querySelector( ':scope > .' + ACTIVEPANELCLASS ),
+			parentPanel, parentSection;
 
 		var getHeight = function( el ) {
 			if ( el.offsetHeight !== 0 ) {
@@ -197,10 +198,20 @@ function initTabber( tabber ) {
 
 			activePanel.classList.remove( ACTIVEPANELCLASS );
 			activePanel.setAttribute( 'aria-hidden', true );
-			section.style.height = getHeight( activePanel ) + 'px';
 			section.style.height = getHeight( targetPanel ) + 'px';
 		} else {
 			section.style.height = getHeight( targetPanel ) + 'px';
+		}
+
+		// If we're inside another tab, trigger its logic to recalc its height
+		parentSection = section;
+		while (true) {
+			parentPanel = parentSection.closest( '.' + ACTIVEPANELCLASS );
+			if ( !parentPanel ) {
+				break;
+			}
+			parentSection = parentPanel.parentElement;
+			parentSection.style.height = getHeight( parentPanel ) + 'px';
 		}
 
 		// Add active class to the tab
