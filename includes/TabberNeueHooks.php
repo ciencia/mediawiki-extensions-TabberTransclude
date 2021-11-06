@@ -15,6 +15,7 @@ namespace TabberNeue;
 
 use Config;
 use Hooks;
+use MediaWiki\MediaWikiServices;
 use Parser;
 use PPFrame;
 use ResourceLoaderContext;
@@ -149,6 +150,12 @@ class TabberNeueHooks {
 					$frame
 				);
 			} else {
+				// Add a link placeholder, as a fallback if JavaScript doesn't execute
+				$linkRenderer = MediaWikiServices::getInstance()->getLinkRenderer();
+				$tabBody = sprintf(
+					'<div class="tabber__ajaxplaceholder">%s</div>',
+					$linkRenderer->makeLink( $title, null, [ 'rel' => 'nofollow' ] )
+				);
 				$dataProps['pending-load'] = '1';
 				// 1.37: $currentTitle = $parser->getPage();
 				$currentTitle = $parser->getTitle();
