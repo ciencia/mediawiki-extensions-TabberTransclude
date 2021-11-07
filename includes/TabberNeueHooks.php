@@ -13,12 +13,10 @@ declare( strict_types=1 );
 
 namespace TabberNeue;
 
-use Config;
 use Hooks;
 use MediaWiki\MediaWikiServices;
 use Parser;
 use PPFrame;
-use ResourceLoaderContext;
 use Title;
 
 class TabberNeueHooks {
@@ -44,15 +42,13 @@ class TabberNeueHooks {
 	 */
 	public static function renderTabber( $input, array $args, Parser $parser, PPFrame $frame ) {
 		$parser->getOutput()->addModules( 'ext.tabberNeue' );
-
-		$key = substr( md5( $input ), 0, 6 );
 		$arr = explode( "|-|", $input );
 		$htmlTabs = '';
 		foreach ( $arr as $tab ) {
 			$htmlTabs .= self::buildTab( $tab, $parser, $frame );
 		}
 
-		$html = '<div id="tabber-' . $key . '" class="tabber">' .
+		$html = '<div class="tabber">' .
 			'<section class="tabber__section">' . $htmlTabs . "</section></div>";
 
 		return $html;
@@ -72,14 +68,13 @@ class TabberNeueHooks {
 		$parser->getOutput()->addModules( 'ext.tabberNeue' );
 		$selected = true;
 
-		$key = substr( md5( $input ), 0, 6 );
 		$arr = explode( "\n", $input );
 		$htmlTabs = '';
 		foreach ( $arr as $tab ) {
 			$htmlTabs .= self::buildTabTransclude( $tab, $parser, $frame, $selected );
 		}
 
-		$html = '<div id="tabber-' . $key . '" class="tabber">' .
+		$html = '<div class="tabber">' .
 			'<section class="tabber__section">' . $htmlTabs . "</section></div>";
 
 		return $html;
@@ -189,20 +184,5 @@ class TabberNeueHooks {
 		$selected = false;
 
 		return $tab;
-	}
-
-	/**
-	 * Passes config variables to ext.tabberNeue ResourceLoader module.
-	 * @param ResourceLoaderContext $context
-	 * @param Config $config
-	 * @return array
-	 */
-	public static function getTabberNeueResourceLoaderConfig(
-		ResourceLoaderContext $context,
-		Config $config
-	) {
-		return [
-			'wgTabberNeueEnableMD5Hash' => $config->get( 'EnableMD5Hash' ),
-		];
 	}
 }
