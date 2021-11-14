@@ -114,17 +114,8 @@ function initTabber( tabber, count ) {
 			var isScrollable = ( tabList.scrollWidth > container.offsetWidth );
 
 			if ( isScrollable ) {
-				var scrollOffset = container.offsetWidth / 2;
-
 				// Just to add the right classes
 				scrollTabs( 0 );
-				prevButton.addEventListener( 'click', function() {
-					scrollTabs( -scrollOffset );
-				}, false );
-
-				nextButton.addEventListener( 'click', function() {
-					scrollTabs( scrollOffset );
-				}, false );
 			} else {
 				container.classList.remove( NEXTCLASS );
 				container.classList.remove( PREVCLASS );
@@ -132,10 +123,23 @@ function initTabber( tabber, count ) {
 		};
 		/* eslint-enable mediawiki/class-doc */
 
+		prevButton.addEventListener( 'click', function() {
+			scrollTabs( container.offsetWidth / -2 );
+		}, false );
+
+		nextButton.addEventListener( 'click', function() {
+			scrollTabs( container.offsetWidth / 2 );
+		}, false );
+
 		setupButtons();
 
-		// Listen for window resize
-		window.addEventListener( 'resize', mw.util.debounce( 250, setupButtons ) );
+		// Listen for element resize
+		if ( window.ResizeObserver ) {
+			var tabListResizeObserver = new ResizeObserver( mw.util.debounce( 250, setupButtons ) );
+			tabListResizeObserver.observe( tabList );
+		}
+		// And also for scroll (touch events)
+		tabList.addEventListener('scroll', mw.util.debounce( 250, setupButtons ) );
 	};
 
 	var xhr = new XMLHttpRequest();
@@ -292,11 +296,7 @@ function initTabber( tabber, count ) {
 	}
 
 	switchTab();
-
-	// Only run if client is not a touch device
-	if ( matchMedia( '(hover: hover)' ).matches ) {
-		initButtons();
-	}
+	initButtons();
 
 	// window.addEventListener( 'hashchange', switchTab, false );
 
