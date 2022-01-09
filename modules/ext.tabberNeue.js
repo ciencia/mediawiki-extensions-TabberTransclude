@@ -7,7 +7,8 @@
 function initTabber( tabber, count ) {
 	var tabPanels = tabber.querySelectorAll( ':scope > .tabber__section > .tabber__panel' );
 
-	var container = document.createElement( 'header' ),
+	var config = require( './config.json' ),
+		container = document.createElement( 'header' ),
 		tabList = document.createElement( 'nav' ),
 		prevButton = document.createElement( 'div' ),
 		nextButton = document.createElement( 'div' );
@@ -305,8 +306,10 @@ function initTabber( tabber, count ) {
 		tab.addEventListener( 'click', function( event ) {
 			var targetHash = tab.getAttribute( 'href' ).substring( 1 );
 			event.preventDefault();
-			// Add hash to the end of the URL
-			history.replaceState( null, null, '#' + targetHash );
+			if ( !config || config.updateLocationOnTabChange.value ) {
+				// Add hash to the end of the URL
+				history.replaceState( null, null, '#' + targetHash );
+			}
 			showPanel( targetHash );
 		} );
 	} );
