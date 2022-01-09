@@ -306,7 +306,7 @@ function initTabber( tabber, count ) {
 		tab.addEventListener( 'click', function( event ) {
 			var targetHash = tab.getAttribute( 'href' ).substring( 1 );
 			event.preventDefault();
-			if ( !config || config.updateLocationOnTabChange.value ) {
+			if ( !config || config.updateLocationOnTabChange ) {
 				// Add hash to the end of the URL
 				history.replaceState( null, null, '#' + targetHash );
 			}
