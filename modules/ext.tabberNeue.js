@@ -174,7 +174,7 @@ function initTabber( tabber, count ) {
 	 *
 	 * @param {string} targetHash
 	 */
-	function showPanel( targetHash ) {
+	function showPanel( targetHash, allowRemoteLoad ) {
 		var ACTIVETABCLASS = 'tabber__tab--active',
 			ACTIVEPANELCLASS = 'tabber__panel--active',
 			targetPanel = document.getElementById( targetHash ),
@@ -183,7 +183,7 @@ function initTabber( tabber, count ) {
 			activePanel = section.querySelector( ':scope > .' + ACTIVEPANELCLASS ),
 			parentPanel, parentSection;
 
-		if ( targetPanel.dataset.tabberPendingLoad && targetPanel.dataset.tabberLoadUrl ) {
+		if ( allowRemoteLoad && targetPanel.dataset.tabberPendingLoad && targetPanel.dataset.tabberLoadUrl ) {
 			var loading = document.createElement( 'div' );
 			loading.setAttribute( 'class', 'tabber__loading' );
 			loading.appendChild( document.createTextNode( mw.message( 'tabberneue-loading' ).text() ) );
@@ -272,7 +272,7 @@ function initTabber( tabber, count ) {
 		}
 		if ( activePanel ) {
 			// Refresh height
-			showPanel( targetHash );
+			showPanel( targetHash, false );
 		}
 	}
 
@@ -293,7 +293,7 @@ function initTabber( tabber, count ) {
 			targetHash = tabList.firstElementChild.getAttribute( 'id' ).substring( 4 );
 		}
 
-		showPanel( targetHash );
+		showPanel( targetHash, true );
 	}
 
 	switchTab();
@@ -310,7 +310,7 @@ function initTabber( tabber, count ) {
 				// Add hash to the end of the URL
 				history.replaceState( null, null, '#' + targetHash );
 			}
-			showPanel( targetHash );
+			showPanel( targetHash, true );
 		} );
 	} );
 
