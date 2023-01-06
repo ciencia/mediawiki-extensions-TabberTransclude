@@ -112,7 +112,7 @@ class TabberNeueHooks {
 	 * @param string $tab Tab information
 	 * @param Parser $parser Mediawiki Parser Object
 	 * @param PPFrame $frame Mediawiki PPFrame Object
-	 * @param bool &$selected The tab is the selected one
+	 * @param bool $selected The tab is the selected one
 	 *
 	 * @return string HTML
 	 */
