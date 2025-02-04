@@ -1,6 +1,6 @@
 {
 	"name": "TabberTransclude",
-	"version": "1.3.2",
+	"version": "1.3.3",
 	"author": [
 		"alistair3149",
 		"Eric Fortin",
@@ -12,7 +12,7 @@
 	"type": "parserhook",
 	"license-name": "GPL-3.0-or-later",
 	"requires": {
-		"MediaWiki": ">= 1.35.0"
+		"MediaWiki": ">= 1.39.0"
 	},
 	"MessagesDirs": {
 		"TabberTransclude": [
@@ -50,7 +50,7 @@
 			]
 		},
 		"ext.tabberNeue.icons": {
-			"class": "ResourceLoaderImageModule",
+			"class": "MediaWiki\\ResourceLoader\\ImageModule",
 			"selector": ".tabber__header__{name}:after",
 			"images": {
 				"next": {
