@@ -13,7 +13,6 @@ declare( strict_types=1 );
 
 namespace TabberNeue;
 
-use Hooks;
 use MediaWiki\MediaWikiServices;
 use Parser;
 use PPFrame;
@@ -162,7 +161,7 @@ class TabberNeueHooks {
 				$dataProps['load-url'] = wfExpandUrl( wfScript( 'api' ) . $query,  PROTO_CANONICAL );
 				$oldTabBody = $tabBody;
 				// Allow extensions to update the lazy loaded tab
-				Hooks::run( 'TabberTranscludeRenderLazyLoadedTab', [ &$tabBody, &$dataProps, $parser, $frame ] );
+				MediaWikiServices::getInstance()->getHookContainer()->run( 'TabberTranscludeRenderLazyLoadedTab', [ &$tabBody, &$dataProps, $parser, $frame ] );
 				if ( $oldTabBody != $tabBody ) {
 					$parser->getOutput()->recordOption( 'tabbertranscludelazyupdated' );
 				}
